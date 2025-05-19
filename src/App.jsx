@@ -1,57 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import "./App.css"
 import RecipeList from "./components/RecipeList"
 import SearchBar from "./components/SearchBar"
+import { fetchRecipes } from "./store/slices/recipeSlice"
 
 function App() {
-  const [recipes, setRecipes] = useState([]);
-  const [filteredRecipes, setFilteredRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { filteredRecipes } = useSelector((state) => state.recipes);
+  const { loading, error } = useSelector((state) => state.ui);
 
   useEffect(() => {
-    fetchRecipes();
-  }, [])
-
-  const fetchRecipes = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("https://dummyjson.com/recipes");
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch recipes");
-      }
-
-      const data = await response.json();
-      setRecipes(data.recipes);
-      setFilteredRecipes(data.recipes);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleSearch = (searchTerm, searchTags) => {
-    if (!searchTerm && !searchTags) {
-      setFilteredRecipes(recipes);
-      return;
-    }
-
-    const filtered = recipes.filter((recipe) => {
-      const nameMatch = searchTerm ? recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
-
-      const tagMatch = searchTags
-        ? recipe.tags.some((tag) => tag.toLowerCase().includes(searchTags.toLowerCase()))
-        : true
-
-      return nameMatch && tagMatch
-    })
-
-    setFilteredRecipes(filtered)
-  }
+    dispatch(fetchRecipes());
+  }, [dispatch]);
 
   return (
     <div className="app">
@@ -60,7 +23,7 @@ function App() {
         <p>Find your next favorite meal</p>
       </header>
 
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar />
 
       {loading && <div className="loading">Loading recipes...</div>}
 

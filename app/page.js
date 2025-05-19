@@ -1,68 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchRecipes, filterRecipes, resetFilters } from "../slices/recipesSlice"
+import { 
+  setSearchTerm, 
+  setSearchTags, 
+  resetSearch, 
+  toggleRecipeDetails 
+} from "../slices/uiSlice"
 import "./globals.css"
 
 export default function RecipeApp() {
-  const [recipes, setRecipes] = useState([])
-  const [filteredRecipes, setFilteredRecipes] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchName, setSearchName] = useState("")
-  const [searchTag, setSearchTag] = useState("")
-  const [expandedRecipeId, setExpandedRecipeId] = useState(null)
+  const dispatch = useDispatch();
+  const { filteredRecipes } = useSelector((state) => state.recipes);
+  const { loading, error, searchTerm, searchTags, expandedRecipeId } = useSelector((state) => state.ui);
 
   useEffect(() => {
-    async function fetchRecipes() {
-      try {
-        const response = await fetch("https://dummyjson.com/recipes")
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes")
-        }
-        const data = await response.json()
-        setRecipes(data.recipes)
-        setFilteredRecipes(data.recipes)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchRecipes()
-  }, [])
+    dispatch(fetchRecipes());
+  }, [dispatch]);
 
   function handleSearch(e) {
-    e.preventDefault()
-
-    if (!searchName && !searchTag) {
-      setFilteredRecipes(recipes)
-      return
-    }
-
-    const filtered = recipes.filter((recipe) => {
-      const nameMatch = searchName ? recipe.name.toLowerCase().includes(searchName.toLowerCase()) : true
-
-      const tagMatch = searchTag ? recipe.tags.some((tag) => tag.toLowerCase().includes(searchTag.toLowerCase())) : true
-
-      return nameMatch && tagMatch
-    })
-
-    setFilteredRecipes(filtered)
+    e.preventDefault();
+    dispatch(filterRecipes({ searchTerm, searchTags }));
   }
 
-  function resetSearch() {
-    setSearchName("")
-    setSearchTag("")
-    setFilteredRecipes(recipes)
+  function resetSearchHandler() {
+    dispatch(resetSearch());
+    dispatch(resetFilters());
   }
 
-  function toggleRecipeDetails(id) {
-    if (expandedRecipeId === id) {
-      setExpandedRecipeId(null)
-    } else {
-      setExpandedRecipeId(id)
-    }
+  function handleToggleRecipeDetails(id) {
+    dispatch(toggleRecipeDetails(id));
   }
 
   if (loading) {
@@ -88,8 +57,8 @@ export default function RecipeApp() {
               <input
                 id="name-search"
                 type="text"
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => dispatch(setSearchTerm(e.target.value))}
                 placeholder="Enter recipe name..."
               />
             </div>
@@ -99,8 +68,8 @@ export default function RecipeApp() {
               <input
                 id="tag-search"
                 type="text"
-                value={searchTag}
-                onChange={(e) => setSearchTag(e.target.value)}
+                value={searchTags}
+                onChange={(e) => dispatch(setSearchTags(e.target.value))}
                 placeholder="Enter tag (e.g., Italian, Dessert)..."
               />
             </div>
@@ -110,7 +79,7 @@ export default function RecipeApp() {
             <button type="submit" className="search-button">
               Search
             </button>
-            <button type="button" className="reset-button" onClick={resetSearch}>
+            <button type="button" className="reset-button" onClick={resetSearchHandler}>
               Reset
             </button>
           </div>
@@ -157,7 +126,10 @@ export default function RecipeApp() {
                 <span className="reviews">({recipe.reviewCount} reviews)</span>
               </div>
 
-              <button className="details-button" onClick={() => toggleRecipeDetails(recipe.id)}>
+              <button 
+                className="details-button" 
+                onClick={() => handleToggleRecipeDetails(recipe.id)}
+              >
                 {expandedRecipeId === recipe.id ? "Hide Details" : "Show Details"}
               </button>
 

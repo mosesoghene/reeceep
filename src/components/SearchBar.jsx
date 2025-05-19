@@ -1,21 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { setSearchTerm, setSearchTags, resetSearch } from "../store/slices/uiSlice"
+import { filterRecipes, resetFilters } from "../store/slices/recipeSlice";
 
-function SearchBar({ onSearch }) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchTags, setSearchTags] = useState("")
+function SearchBar() {
+  const dispatch = useDispatch();
+  const { searchTerm, searchTags } = useSelector((state) => state.ui);
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    onSearch(searchTerm, searchTags)
-  }
+    e.preventDefault();
+    dispatch(filterRecipes({ searchTerm, searchTags }));
+  };
 
   const handleReset = () => {
-    setSearchTerm("")
-    setSearchTags("")
-    onSearch("", "")
-  }
+    dispatch(resetSearch());
+    dispatch(resetFilters());
+  };
 
   return (
     <div className="search-container">
@@ -27,7 +28,7 @@ function SearchBar({ onSearch }) {
               id="name-search"
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => dispatch(setSearchTerm(e.target.value))}
               placeholder="Enter recipe name..."
             />
           </div>
@@ -38,7 +39,7 @@ function SearchBar({ onSearch }) {
               id="tag-search"
               type="text"
               value={searchTags}
-              onChange={(e) => setSearchTags(e.target.value)}
+              onChange={(e) => dispatch(setSearchTags(e.target.value))}
               placeholder="Enter tag (e.g., Italian, Dessert)..."
             />
           </div>
@@ -54,7 +55,7 @@ function SearchBar({ onSearch }) {
         </div>
       </form>
     </div>
-  )
+  );
 }
 
-export default SearchBar
+export default SearchBar;

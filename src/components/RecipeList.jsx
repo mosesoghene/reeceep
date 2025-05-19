@@ -14,4 +14,4 @@ function RecipeList({ recipes }) {
   )
 }
 
-export default RecipeList
+export default RecipeList;

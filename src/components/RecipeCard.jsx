@@ -1,13 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { toggleRecipeDetails } from "../store/slices/uiSlice"
 
 function RecipeCard({ recipe }) {
-  const [showDetails, setShowDetails] = useState(false)
+  const dispatch = useDispatch();
+  const { expandedRecipeId } = useSelector((state) => state.ui);
+  
+  const showDetails = expandedRecipeId === recipe.id;
 
-  const toggleDetails = () => {
-    setShowDetails(!showDetails)
-  }
+  const handleToggleDetails = () => {
+    dispatch(toggleRecipeDetails(recipe.id));
+  };
 
   return (
     <div className="recipe-card">
@@ -45,7 +49,7 @@ function RecipeCard({ recipe }) {
         <span className="reviews">({recipe.reviewCount} reviews)</span>
       </div>
 
-      <button className="details-button" onClick={toggleDetails}>
+      <button className="details-button" onClick={handleToggleDetails}>
         {showDetails ? "Hide Details" : "Show Details"}
       </button>
 
@@ -80,4 +84,4 @@ function RecipeCard({ recipe }) {
   )
 }
 
-export default RecipeCard
+export default RecipeCard;
